@@ -87,7 +87,7 @@ class Snake(GameObject):
     """Дочерний класс определяющий объект: Змейка."""
 
     def __init__(self, body_color=SNAKE_COLOR, position=initial_position):
-        """Дочерний конструктор с атрибутами длинны, цвета, позиции, направления."""
+        """Дочерний конструктор с атрибутами длинны, цвета, позиции."""
         super().__init__(position, body_color)
         self.positions = [self.position]
         self.body_color = body_color
