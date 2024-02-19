@@ -43,40 +43,38 @@ pygame.display.set_caption('Змейка')
 # Настройка времени:
 clock = pygame.time.Clock()
 
+# Центральная точка экрана:
 initial_position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 
+
 # Тут опишите все классы игры.
-
-"""Родительский класс."""
 class GameObject:
+    """Родительский класс."""
 
-    """Родительский конструктор передающий центральную точку и
-    дефолтный цвет объектов.
-    """
     def __init__(self, position=initial_position, body_color=(0, 0, 0)):
+        """Родительский конструктор принимающий атрибуты позиции и цвета."""
         self.body_color = body_color
         self.position = position
-    """Абстрактный родительский метод прорисовки объектов."""
+
     def draw(self, surface):
+        """Абстрактный метод, реализуется в дочерних классах."""
         pass
 
 
-"""Дочерний класс описывающий игровое яблоко."""
 class Apple(GameObject):
+    """Дочерний класс описывающий игровое яблоко."""
 
-    """Дочерний конструктор принимающий в себя атрибуты цвета
-    и позиции объекта.
-    """
-    def __init__(self, position=initial_position, body_color=APPLE_COLOR) -> None:
+    def __init__(self, position=initial_position, body_color=APPLE_COLOR):
+        """Дочерний конструктор принимающий атрибуты позиции и цвета."""
         super().__init__(position, body_color)
         self.position = self.randomize_position()
 
-    """Метод устанавливающий яблоко в случайном порядке."""
     def randomize_position(self):
+        """Метод устанавливающий яблоко в случайном порядке."""
         return (randint(0, 31) * GRID_SIZE, randint(0, 23) * GRID_SIZE)
 
-    """Метод отрисовывающий яблоко на игрвоом поле."""
     def draw(self, surface):
+        """Метод отрисовывающий яблоко на игровом поле."""
         rect = pygame.Rect(
             (self.position[0], self.position[1]),
             (GRID_SIZE, GRID_SIZE)
@@ -85,13 +83,11 @@ class Apple(GameObject):
         pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
 
-"""Дочерний класс определяющий объект: Змейка."""
 class Snake(GameObject):
+    """Дочерний класс определяющий объект: Змейка."""
 
-    """Дочерний конструктор  класса Змейка с набором атрибутов
-    характеризующих змейку, таких как стартовая позиция, длинна,
-    цвет тела, направление движения."""
-    def __init__(self, body_color=SNAKE_COLOR, position=initial_position) -> None:
+    def __init__(self, body_color=SNAKE_COLOR, position=initial_position):
+        """Дочерний конструктор с атрибутами длинны, цвета, позиции, направления."""
         super().__init__(position, body_color)
         self.positions = [self.position]
         self.body_color = body_color
@@ -101,12 +97,12 @@ class Snake(GameObject):
         self.next_direction = None
         self.position = initial_position
 
-    """Метод определяющий позицию головы змейки."""
     def get_head_position(self):
+        """Метод определяющий позицию головы змейки."""
         return self.positions
 
-    """Метод отрисовывающий змейку на игровом поле."""
     def draw(self, surface):
+        """Метод отрисовывающий змейку на игровом поле."""
         for position in self.positions[:-1]:
             rect = (
                 pygame.Rect((position[0], position[1]), (GRID_SIZE, GRID_SIZE))
@@ -127,25 +123,23 @@ class Snake(GameObject):
             )
             pygame.draw.rect(surface, BOARD_BACKGROUND_COLOR, last_rect)
 
-    """Метод сбрасывающий змейку в начальное состояние."""
     def reset(self):
+        """Метод сбрасывающий змейку в начальное состояние."""
         self.length = 1
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
         self.positions = [initial_position]
         self.last = None
         screen.fill(BOARD_BACKGROUND_COLOR)
 
-    """Метод обновляющий направление движения змейки."""
     def update_direction(self):
+        """Метод обновляющий направление движения змейки."""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
-    """Метод обновляющий положение змейки, а так же
-    добавляющий новую голову или удаляющий последний сегмент."""
     def move(self):
+        """Метод обновляющий положение змейки."""
         head = self.get_head_position()
-
         directions = {
             RIGHT: (head[0][0] + GRID_SIZE, head[0][1]),
             LEFT: (head[0][0] - GRID_SIZE, head[0][1]),
@@ -154,11 +148,9 @@ class Snake(GameObject):
         }
         self.head = directions[self.direction]
         x, y = self.head
-        """Проверка на столкновение с самой собой."""
         if self.head in self.positions:
             self.reset()
-        """Определение границ игрового поля с возможностью
-        прохождения 'сквозь стены'."""
+        """Проверка на столкновение с самой собой."""
         if x < 0:
             x = SCREEN_WIDTH - GRID_SIZE
         elif x >= SCREEN_WIDTH:
@@ -167,15 +159,16 @@ class Snake(GameObject):
             y = SCREEN_HEIGHT - GRID_SIZE
         elif y >= SCREEN_HEIGHT:
             y = 0
+        """Определение границ игрового поля с возможностью
+        прохождения 'сквозь стены'."""
         if len(self.positions) > self.length:
             self.positions.pop(-1)
         self.last = self.positions[-1]
         self.positions.insert(0, (x, y))
 
 
-"""Функция принимающая управление змейкой и
-поддерживающее открытым игровой экран."""
 def handle_keys(game_object):
+    """Функция принимающая управление змейкой."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -191,8 +184,8 @@ def handle_keys(game_object):
                 game_object.next_direction = RIGHT
 
 
-"""Функция определяющая и описывающая логику игры."""
 def main():
+    """Функция определяющая и описывающая логику игры."""
     # Тут нужно создать экземпляры классов.
     apple = Apple()
     snake = Snake()
@@ -215,6 +208,6 @@ def main():
             snake.reset()
 
 
-'''Условный оператор запускающий код напрямую.'''
 if __name__ == '__main__':
     main()
+"""Условный оператор запускающий код напрямую."""
