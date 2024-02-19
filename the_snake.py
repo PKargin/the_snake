@@ -1,5 +1,6 @@
-"""Импортируем из библиотеки рэндом - методы"""
+"""Импорт модулей из библиотеки."""
 from random import choice, randint
+
 
 import pygame
 
@@ -45,32 +46,36 @@ clock = pygame.time.Clock()
 initial_position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 
 # Тут опишите все классы игры.
-"""Родительский класс GameObject"""
+
+"""Родительский класс."""
 class GameObject:
 
-    """Конструктор родительского класса"""
-    def __init__(self, position=initial_position, body_color=(0, 0, 0)) -> None:
+    """Родительский конструктор передающий центральную точку и
+    дефолтный цвет объектов.
+    """
+    def __init__(self, position=initial_position, body_color=(0, 0, 0)):
         self.body_color = body_color
         self.position = position
-
-    """Абстрактный метод отрисовки объектов для использования в дочерних классах"""
+    """Абстрактный родительский метод прорисовки объектов."""
     def draw(self, surface):
         pass
 
 
-"""Дочерний класс интерпритирующий Яблоко на игровом поле"""
+"""Дочерний класс описывающий игровое яблоко."""
 class Apple(GameObject):
 
-    """Дочерний конструтор яблока"""
+    """Дочерний конструктор принимающий в себя атрибуты цвета
+    и позиции объекта.
+    """
     def __init__(self, position=initial_position, body_color=APPLE_COLOR) -> None:
         super().__init__(position, body_color)
         self.position = self.randomize_position()
 
-    """Метод реализующий случайное появление яблока на игровом поле"""
+    """Метод устанавливающий яблоко в случайном порядке."""
     def randomize_position(self):
         return (randint(0, 31) * GRID_SIZE, randint(0, 23) * GRID_SIZE)
 
-    """Метод отрисовывающий яблоко на игровом поле"""
+    """Метод отрисовывающий яблоко на игрвоом поле."""
     def draw(self, surface):
         rect = pygame.Rect(
             (self.position[0], self.position[1]),
@@ -80,10 +85,12 @@ class Apple(GameObject):
         pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
 
-"""Дочерний класс реализующий Змейку"""
+"""Дочерний класс определяющий объект: Змейка."""
 class Snake(GameObject):
 
-    """Дочерний конструктор змейки"""
+    """Дочерний конструктор  класса Змейка с набором атрибутов
+    характеризующих змейку, таких как стартовая позиция, длинна,
+    цвет тела, направление движения."""
     def __init__(self, body_color=SNAKE_COLOR, position=initial_position) -> None:
         super().__init__(position, body_color)
         self.positions = [self.position]
@@ -94,11 +101,11 @@ class Snake(GameObject):
         self.next_direction = None
         self.position = initial_position
 
-    """Метод возвращающий позицию головы змейки(по умолчанию центр экрана)"""
+    """Метод определяющий позицию головы змейки."""
     def get_head_position(self):
         return self.positions
 
-    """Метод отрисовывающий змейку на игровом поле"""
+    """Метод отрисовывающий змейку на игровом поле."""
     def draw(self, surface):
         for position in self.positions[:-1]:
             rect = (
@@ -120,7 +127,7 @@ class Snake(GameObject):
             )
             pygame.draw.rect(surface, BOARD_BACKGROUND_COLOR, last_rect)
 
-    """Метод сбрасывающий змейку к началу, в случае столкновения со своим телом"""
+    """Метод сбрасывающий змейку в начальное состояние."""
     def reset(self):
         self.length = 1
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
@@ -128,16 +135,17 @@ class Snake(GameObject):
         self.last = None
         screen.fill(BOARD_BACKGROUND_COLOR)
 
-    """Метод определяющий направление движения змейки"""
+    """Метод обновляющий направление движения змейки."""
     def update_direction(self):
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
-    """Метод определяющий движение змейки"""
+    """Метод обновляющий положение змейки, а так же
+    добавляющий новую голову или удаляющий последний сегмент."""
     def move(self):
         head = self.get_head_position()
-        """ВЫчисление новой позиции головы"""
+
         directions = {
             RIGHT: (head[0][0] + GRID_SIZE, head[0][1]),
             LEFT: (head[0][0] - GRID_SIZE, head[0][1]),
@@ -146,11 +154,11 @@ class Snake(GameObject):
         }
         self.head = directions[self.direction]
         x, y = self.head
-        """Проверка на столкновение с собой"""
+        """Проверка на столкновение с самой собой."""
         if self.head in self.positions:
             self.reset()
-        """Определяем дальнейший ход змейки,
-        если она попадает в границы экрана"""
+        """Определение границ игрового поля с возможностью
+        прохождения 'сквозь стены'."""
         if x < 0:
             x = SCREEN_WIDTH - GRID_SIZE
         elif x >= SCREEN_WIDTH:
@@ -159,14 +167,14 @@ class Snake(GameObject):
             y = SCREEN_HEIGHT - GRID_SIZE
         elif y >= SCREEN_HEIGHT:
             y = 0
-        """Обновление списка позиций: имитация движения"""
         if len(self.positions) > self.length:
             self.positions.pop(-1)
-        """Обновление списка позиций: увеличение змейки"""
         self.last = self.positions[-1]
         self.positions.insert(0, (x, y))
 
-"""Функция обработки действий пользователя"""
+
+"""Функция принимающая управление змейкой и
+поддерживающее открытым игровой экран."""
 def handle_keys(game_object):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -182,12 +190,13 @@ def handle_keys(game_object):
             elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
                 game_object.next_direction = RIGHT
 
-""" Основной игрвоой цикл"""
+
+"""Функция определяющая и описывающая логику игры."""
 def main():
     # Тут нужно создать экземпляры классов.
     apple = Apple()
     snake = Snake()
-    """Бесконечный цикл с функциональной частью змейки"""
+
     # Тут опишите основную логику игры.
     while True:
         clock.tick(SPEED)
@@ -197,14 +206,15 @@ def main():
         snake.update_direction()
         snake.move()
         pygame.display.update()
-
+        """Удлиннение змейки."""
         if snake.head == apple.position:
             snake.length += 1
             apple.position = apple.randomize_position()
-
+        """Сброс змейки."""
         if snake.head in snake.positions[-1]:
             snake.reset()
 
-"""Конструкция которая проверяет запускается ли код напрямую"""
+
+'''Условный оператор запускающий код напрямую.'''
 if __name__ == '__main__':
     main()
